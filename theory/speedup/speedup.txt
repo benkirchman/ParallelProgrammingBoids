@@ -1,0 +1,10 @@
+1. Speedup is comparrison of single worker performance versus multi worker performance.
+2. Efficiency is the speedup per worker.
+3. a) The span is 3.
+   b) With a single processor the runtime is 5s * 6 tasks = 30s
+   c) With two processors the runtime is 20s so the speedup is 30s/20s =  1.5. The efficiency is 1.5/2 = .75.
+   d) With 4 processors the runtime is 15s so the speedup is 30/15 = 2. The efficiency is 2/4 = .5.
+   e) With 10 processors the speedup stays the same as with 4 (2) and the efficiency is 2/10 = .2.
+   f) To get a speedup of 10 we can solve the equation 10 = 30 / x for x = 3. It is impossible to get a runtime of 3 with this graph because the tasks all take 5s of runtime. Without breaking down these tasks more the fastest this graph can be run is 15 seconds.
+4. a) The minimum possible latency is the slower of light moving 10cm and one cycle of the processor. In this scenario 3*10^8 m/s / 100cm * 10cm = 3*10^9 which is the same as the clock speed. 
+   b) Because the bus has a cycle speed of 3ghz and a width of 256 3*(256/8) = 96GB/s, which is rediculous. 
