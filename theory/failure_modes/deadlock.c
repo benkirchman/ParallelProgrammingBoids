@@ -1,5 +1,7 @@
 #include <omp.h>
 #include <stdio.h>
+#include <omp.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 omp_lock_t lockA;
@@ -10,11 +12,11 @@ int B=4;
 void proc_a() {
     int x,y;
     // lock a so that the value won't change unexpectedly
-    omp_set_lock(&lockA);
+    omp_set_lock(&lockA); 
+    omp_set_lock(&lockB);
     x = A;
     x = x*2;
     // lock b during modification
-    omp_set_lock(&lockB);
     y = B;
     y -= x;
     B = y;
@@ -27,11 +29,11 @@ void proc_a() {
 void proc_b() {
     int x,y;
     // lock b so that the value won't change unexpectedly
+    omp_set_lock(&lockA);
     omp_set_lock(&lockB);
     x = B;
     x = x/2;
     // lock a during modification
-    omp_set_lock(&lockA);
     y = A;
     y += x;
     A = y;
