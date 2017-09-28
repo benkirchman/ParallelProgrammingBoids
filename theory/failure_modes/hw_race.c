@@ -7,7 +7,7 @@ int main(int argc, char** argv) {
     int t_hello[T];
     int i = 0; 
     for(i = 0; i < T; i++) {
-        t_hello[i];
+        t_hello[i] = -1;
     }
     #pragma omp parallel num_threads(8)
     {
