@@ -1,0 +1,8 @@
+1. I believe the three c functions for taking input were scanf(), fgets(), and fgetc(). scanf reads formatted input from stdin, the standard input stream. fgetc returns the next character from a specified filepath. fgets reads a specified number of characters from a file and adds them to the specified buffer. 
+
+2. There are many differences between what the stack and the heap are used for, but the main difference in their application to parallelism is that in a multi threaded program the heap persists between threads, but each thread will have its own stack. 
+
+3. A struct can be viewed as a methodless, non-static class. If a programmer needed to use a struct they would likely use an enum or a methodless non-static class. In java programmers can use AutoValue to easily create and modify immutable value classes. 
+
+4. Structs can be used in c to mimic object oriented polymorphism. ANything that can be done in an object oriented language can be done in C because both are Turing Complete. The point of object oriented programming is not to be able to do more, but it is to be able to do it more easily. Although the functionality of objects in programing is not lost in c, the complication of achieving this functionality makes it less useful than in a true OO language. 
+
