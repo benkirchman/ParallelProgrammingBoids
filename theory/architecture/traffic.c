@@ -9,6 +9,9 @@ typedef struct YearNode {
 } node_t;
 
 void addToList(node_t * head, char* year) {
+    if(strncmp(&year[0], "2", 1) !=0) {
+        return;
+    } 
     if(head->year == NULL || head->year == 0) {
         head->year = year;
         head->stops = 1;
