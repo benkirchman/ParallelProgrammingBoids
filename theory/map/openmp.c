@@ -81,11 +81,11 @@ int main(int argc, char** argv) {
         #pragma omp parallel for shared(sharedNotFound)
 	for(int i = 0; i < 8; i++) {
 //	    printf("thread number %d\n", omp_get_thread_num());
-            genpass(currpass + i,passmatch[omp_get_thread_num()]);
-            notfound=test(argv[1], passmatch[omp_get_thread_num()]);
+            genpass(currpass + i,passmatch[i]);
+            notfound=test(argv[1], passmatch[i]);
 	    if(notfound == 0) {
 		sharedNotFound = 0;
-                strncpy(passmatchResult, passmatch[omp_get_thread_num()], 9);
+                strncpy(passmatchResult, passmatch[i], 9);
 	    }
         }
         currpass += 8;
