@@ -1,6 +1,3 @@
-/**
- * Program to scale and project data into 2D and find a centroid
- */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,10 +14,10 @@ struct phaseball {
 };
 
 struct objectList {
-    float** xs;
-    float** ys;
-    float** zs;
-    float** masses;
+    float* xs;
+    float* ys;
+    float* zs;
+    float* masses;
 };
 
 struct volume {
@@ -31,46 +28,34 @@ struct volume {
 
 // Add phaseball to a volume
 void volume_append(struct volume* v, struct phaseball* o) {
-    if( v->last == v->size ) {
+ if( v->last == v->size ) {
         (v->size) += 100;
-        int size = sizeof(float*)*(v->size + 100);
+        int size = sizeof(float)*(v->size);
         v->objects->xs = realloc(v->objects->xs, size);
         v->objects->ys = realloc(v->objects->ys, size);
-        v->objects->zs = realloc(v->objects->xs, size);
+        v->objects->zs = realloc(v->objects->zs, size);
         v->objects->masses = realloc(v->objects->masses, size);
     }
-    (v->objects)->xs[(v->last)] = &(o->x);
-    (v->objects)->ys[(v->last)] = &(o->y);
-    (v->objects)->zs[(v->last)] = &(o->z);
-    (v->objects)->masses[(v->last)] = &(o->mass);
+    (v->objects)->xs[(v->last)] = (o->x);
+    (v->objects)->ys[(v->last)] = (o->y);
+    (v->objects)->zs[(v->last)] = (o->z);
+    (v->objects)->masses[(v->last)] = (o->mass);
     (v->last) += 1;
-    return;
+return;
 }
         
 // Place phaseballs uniformly in a box, with mass equal to the manhattan distance
 void place_uniformly(int sx, int ex, int sy, int ey, int sz, int ez, struct volume* v) {
-    int halfx = (ex+sx)/2;
-    int halfy = (ey+sy)/2;
-    int halfz = (ez+sz)/2;
-    int psx[8] = {sx,halfx,sx,halfx,sx,halfx,sx,halfx};
-    int psy[8] = {sy,sy,halfy,halfy,sy,sy,halfy,halfy};
-    int psz[8] = {sz,sz,sz,sz,halfz,halfz,halfz,halfz};
-    int pex[8] = {halfx,ex,halfx,ex,halfx,ex,halfx,ex};
-    int pey[8] = {halfy,halfy,ey,ey,halfy,halfy,ey,ey};
-    int pez[8] = {halfz,halfz,halfz,halfz,ez,ez,ez,ez};
-    struct phaseball* n[8];
-    for(int i = 0; i < 8; i++) {
-        for(int x=psx[i]; x<=pex[i]; x++) {
-	    for(int y=psy[i]; y<=pey[i]; y++) {
-	        for(int z=psz[i]; z<=pez[i]; z++) {
-                    n[i] = malloc(sizeof(struct phaseball));
-	   	    n[i]->x = x;
-		    n[i]->y = y;
-		    n[i]->z = z;
-		    n[i]->mass = 1;
-		    n[i]->mass = fabs(n[i]->x)+fabs(n[i]->y)+fabs(n[i]->z);
-                    volume_append(v,n[i]);
-                }
+    for(int i=sx; i<=ex; i++) {
+        for(int j=sy; j<=ey; j++) {
+            for(int k=sz; k<=ez; k++) {
+                struct phaseball* n = malloc(sizeof(struct phaseball));
+                n->x = i;
+                n->y = j;
+                n->z = k;
+                n->mass = 1;
+                n->mass = fabs(n->x)+fabs(n->y)+fabs(n->z);
+                volume_append(v,n);
             }
         }
     }
@@ -83,11 +68,10 @@ void post_process(struct volume* v, float* cx, float* cy) {
     double wy=0.0;
     #pragma omp parallel for reduction(+:mass_sum) reduction(+:wx) reduction(+:wy)
     for(int i=0; i<v->last; i++) {
-        struct objectList* o = v->objects;
-        mass_sum += *(o->masses[i]);
-        wx += *(o->xs[i]) * *(o->masses[i]);
-        wy += *(o->ys[i]) * *(o->masses[i]);
-     }
+        mass_sum += v->objects->masses[i];
+        wx += v->objects->xs[i] * v->objects->masses[i];
+        wy += v->objects->ys[i] * v->objects->masses[i];
+    }
     *cx = wx/mass_sum;
     *cy = wy/mass_sum;
     
@@ -123,3 +107,4 @@ int main(int argc, char** argv) {
     
     return EXIT_SUCCESS;
 }
+
