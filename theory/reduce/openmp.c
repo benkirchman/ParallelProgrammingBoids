@@ -8,7 +8,6 @@
 #include <time.h>
 #include <omp.h>
 
-omp_lock_t lock;
 /* struct to hold objects attributes */
 struct phaseball {
     float x;
@@ -34,17 +33,13 @@ struct volume {
 void volume_append(struct volume* v, struct phaseball* o) {
     if( v->last == v->size ) {
         (v->size) += 100;
-        int size = sizeof(float)*(v->size);
+        int size = sizeof(float*)*(v->size + 100);
         v->objects->xs = realloc(v->objects->xs, size);
         v->objects->ys = realloc(v->objects->ys, size);
-        v->objects->zs = realloc(v->objects->zs, size);
+        v->objects->zs = realloc(v->objects->xs, size);
         v->objects->masses = realloc(v->objects->masses, size);
     }
-    struct objectList* objects = v->objects;
-    float** xs = objects->xs;
-    float* x = xs[(v->last)];
-    float* new = &(o->x);
-    x = new;
+    (v->objects)->xs[(v->last)] = &(o->x);
     (v->objects)->ys[(v->last)] = &(o->y);
     (v->objects)->zs[(v->last)] = &(o->z);
     (v->objects)->masses[(v->last)] = &(o->mass);
@@ -64,7 +59,6 @@ void place_uniformly(int sx, int ex, int sy, int ey, int sz, int ez, struct volu
     int pey[8] = {halfy,halfy,ey,ey,halfy,halfy,ey,ey};
     int pez[8] = {halfz,halfz,halfz,halfz,ez,ez,ez,ez};
     struct phaseball* n[8];
-    #pragma omp parallel for
     for(int i = 0; i < 8; i++) {
         for(int x=psx[i]; x<=pex[i]; x++) {
 	    for(int y=psy[i]; y<=pey[i]; y++) {
@@ -75,9 +69,7 @@ void place_uniformly(int sx, int ex, int sy, int ey, int sz, int ez, struct volu
 		    n[i]->z = z;
 		    n[i]->mass = 1;
 		    n[i]->mass = fabs(n[i]->x)+fabs(n[i]->y)+fabs(n[i]->z);
-		    omp_set_lock(&lock);    
                     volume_append(v,n[i]);
-		    omp_unset_lock(&lock);
                 }
             }
         }
