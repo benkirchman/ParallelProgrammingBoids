@@ -5,6 +5,7 @@
 #include <opencv2/opencv.hpp>
 #include <time.h>
 #include <cilk/cilk.h>
+#include <cilk/reducer_opadd.h>
 
 using namespace cv;
 
@@ -136,17 +137,23 @@ void apply_stencil(const int radius, const double stddev, const int rows, const 
     for(int i = 0; i < rows; ++i) {
         for(int j = 0; j < cols; ++j) {
             const int out_offset = i + (j*rows);
-            double xIntensity = 0;
-            double yIntensity = 0;
+            double xIntensities[9];
+            double yIntensities[9];
             cilk_for(int k = 0; k < 9; k++) {
                 int x = (i-prad) + k/3;
                 int y = (j-prad) + k%3;
                 if(x >= 0 && x < rows && y >= 0 && y < cols) {
                     const int in_offset = x + (y*rows);
                     double intensity = (blurredPixels[in_offset].red + blurredPixels[in_offset].green + blurredPixels[in_offset].blue)/3.0;
-                    xIntensity += (prewittxKernel[i] * intensity);
-                    yIntensity += (prewittyKernel[i] * intensity);
+                    xIntensities[k] = (prewittxKernel[k] * intensity);
+                    yIntensities[k] = (prewittyKernel[k] * intensity);
                 }
+            }
+            double xIntensity = 0.0;
+            double yIntensity = 0.0;
+            for(int i = 0; i < 9; i++) {
+                xIntensity += xIntensities[i]; 
+                yIntensity += yIntensities[i]; 
             }
             double  intensity = sqrt((xIntensity * xIntensity) + (yIntensity * yIntensity));
             out[out_offset].red = intensity;

@@ -4,7 +4,7 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <time.h>
-
+#include <omp.h>
 using namespace cv;
 
 // Represents a pixel as a triple of intensities
@@ -96,13 +96,26 @@ void gaussian_kernel(const int rows, const int cols, const double stddev, double
  */
 void apply_stencil(const int radius, const double stddev, const int rows, const int cols, pixel * const in, pixel * const out) {
     const int dim = radius*2+1;
-    double kernel[dim*dim];
-    gaussian_kernel(dim, dim, stddev, kernel);
+    const int prad = 1;
+    const int pdim = 3;
+    double gaussianKernel[dim*dim];
+    gaussian_kernel(dim, dim, stddev, gaussianKernel);
+    double prewittxKernel[pdim*pdim];
+    double prewittyKernel[pdim*pdim];
+    prewittX_kernel(pdim, pdim, prewittxKernel);
+    prewittY_kernel(pdim, pdim, prewittyKernel);
+    pixel * blurredPixels = (pixel *) malloc(rows * cols * sizeof(pixel));
+    for(int i = 0; i < rows * cols; ++i) {
+        blurredPixels[i].red = 0.0;
+        blurredPixels[i].green = 0.0;
+        blurredPixels[i].blue = 0.0;
+    }
+
     // For each pixel in the image...
     for(int i = 0; i < rows; ++i) {
         for(int j = 0; j < cols; ++j) {
             const int out_offset = i + (j*rows);
-            // ...apply the template centered on the pixel...
+            // ...apply the gaussian template centered on the pixel...
             for(int x = i - radius, kx = 0; x <= i + radius; ++x, ++kx) {
                 for(int y = j - radius, ky = 0; y <= j + radius; ++y, ++ky) {
                     // ...and skip parts of the template outside of the image
@@ -110,12 +123,41 @@ void apply_stencil(const int radius, const double stddev, const int rows, const 
                         // Acculate intensities in the output pixel
                         const int in_offset = x + (y*rows);
                         const int k_offset = kx + (ky*dim);
-                        out[out_offset].red   += kernel[k_offset] * in[in_offset].red;
-                        out[out_offset].green += kernel[k_offset] * in[in_offset].green;
-                        out[out_offset].blue  += kernel[k_offset] * in[in_offset].blue;
+                        blurredPixels[out_offset].red   += gaussianKernel[k_offset] * in[in_offset].red;
+                        blurredPixels[out_offset].green += gaussianKernel[k_offset] * in[in_offset].green;
+                        blurredPixels[out_offset].blue  += gaussianKernel[k_offset] * in[in_offset].blue;
                     }
                 }
             }
+        }
+    }
+
+    for(int i = 0; i < rows; ++i) {
+        for(int j = 0; j < cols; ++j) {
+            const int out_offset = i + (j*rows);
+            double xIntensities[9];
+            double yIntensities[9];
+            #pragma omp parallel for
+            for(int k = 0; k < 9; k++) {
+                int x = (i-prad) + k/3;
+                int y = (j-prad) + k%3;
+                if(x >= 0 && x < rows && y >= 0 && y < cols) {
+                    const int in_offset = x + (y*rows);
+                    double intensity = (blurredPixels[in_offset].red + blurredPixels[in_offset].green + blurredPixels[in_offset].blue)/3.0;
+                    xIntensities[k] = (prewittxKernel[k] * intensity);
+                    yIntensities[k] = (prewittyKernel[k] * intensity);
+                }
+            }
+            double xIntensity = 0.0;
+            double yIntensity = 0.0;
+            for(int i = 0; i < 9; i++) {
+                xIntensity += xIntensities[i]; 
+                yIntensity += yIntensities[i]; 
+            }
+            double  intensity = sqrt((xIntensity * xIntensity) + (yIntensity * yIntensity));
+            out[out_offset].red = intensity;
+            out[out_offset].green = intensity;
+            out[out_offset].blue = intensity;
         }
     }
 }
