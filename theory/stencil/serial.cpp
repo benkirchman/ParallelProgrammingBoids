@@ -33,27 +33,10 @@ struct pixel {
  *     http://en.wikipedia.org/wiki/Prewitt_operator
  */
 void prewittX_kernel(const int rows, const int cols, double * const kernel) {
-    if(rows != 3 || cols !=3) {
-        std::cerr << "Bad Prewitt kernel matrix\n";
-        return;
-    }
-    for(int i=0;i<3;i++) {
-        kernel[0 + (i*rows)] = -1.0;
-        kernel[1 + (i*rows)] = 0.0;
-        kernel[2 + (i*rows)] = 1.0;
-    }
-}
+    kernel = {0,0,0,-1,0,1,0,0,0};
 
 void prewittY_kernel(const int rows, const int cols, double * const kernel) {
-        if(rows != 3 || cols !=3) {
-                std::cerr << "Bad Prewitt kernel matrix\n";
-                return;
-        }
-        for(int i=0;i<3;i++) {
-                kernel[i + (0*rows)] = 1.0;
-                kernel[i + (1*rows)] = 0.0;
-                kernel[i + (2*rows)] = -1.0;
-        }
+    kernel = {0,-1,0,0,0,1,0,1,0};
 }
 
 /*
