@@ -1,19 +1,36 @@
 #include <stdlib.h>
-static const int FLOCK_SIZE = 10;
+#include <time.h>
+#include "nodes.h"
 
-static struct {
-	float** x[FLOCK_SIZE];
-	float** y[FLOCK_SIZE];
-	float** velocity[FLOCK_SIZE];
-} flock; 
+struct Node{
+	int x;
+	int y;
+	float velocity;
+	int xdir;
+	int ydir;
+};
 
-void setupFlock() {
+
+int flockSize = 10;
+struct Node** flock;
+
+void initFlock(int size) {
+	flockSize = size;
+	flock = malloc(sizeof(struct Node) * flockSize);
+	time_t t;
 	srand((unsigned) time(&t));
-	for(int i = 0; i < FLOCK_SIZE; i++) {
-		flock.x[i] = rand() % 50;
-		flock.y[i] = rand() % 50;
-		flock.velocity[i] = ((float)(rand() % 10)) / 10.0;
+	for(int i = 0; i < flockSize; i++) {
+		flock[i]->x = (rand() % 1000);
+		flock[i]->y = (rand() % 1000);
+		flock[i]->velocity = (((float)(rand() % 10)) / 10.0);
+		flock[i]->xdir = (rand() % 10);
+		flock[i]->ydir = (rand() % 10);
 	}
+}
+
+void getXYat(int index, int* x, int* y) {
+	x =  &flock[index]->x;
+	y =  &flock[index]->y;
 }
 
 

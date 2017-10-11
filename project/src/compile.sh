@@ -1,5 +1,5 @@
 #! /bin/bash
 
-gcc -o nodes.c
-gcc -o run view.c
+gcc  -g view.c -lm -lGL -lglut -o run
+./run
 
